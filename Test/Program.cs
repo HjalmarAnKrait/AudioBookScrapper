@@ -3,12 +3,12 @@ using AudioBookScrapper.Model;
 using NAudio.Wave;
 using System.Net;
 
-var book = await AudioBookParser.ParseBookFromUrl("https://knigavuhe.org/book/stalker-dzhin-s-chaehs/");
+var book = await AudioBookParser.ParseBookFromUrl("https://knigavuhe.org/book/stalker-pervyjj-stalker/");
 Console.WriteLine(book.ToString());
+//var a = new System.Windows.Forms
 await DownloadAllBook(book);
 
 while(book.Playlist.Any(x=> !x.IsDownloaded)) { }
-
 static void PlayFile(AudioBook book)
 {
     var bookPart = book.Playlist.First();
@@ -36,15 +36,18 @@ static async Task DownloadAllBook(AudioBook audioBook)
         Console.WriteLine($"{audioBook.Title}");
         Console.WriteLine($"Загрузка файла {i+1} из {audioBook.Playlist.Count}");
         var book = audioBook.Playlist[i];
-        await Download(book);
+        await Download(book, audioBook.Title);
         book.IsDownloaded = true;
     }
 }
 
-static async Task Download(BookElement part)
+static async Task Download(BookElement part, string bookTitle)
 {
     using var client = new HttpClient();
     using var s = await client.GetStreamAsync(part.Url);
-    using var fs = new FileStream(@"C:\Users\TarabrinEO\Desktop\book\" + part.Title + ".mp3", FileMode.OpenOrCreate);
+
+    string path = $"C:\\Users\\TarabrinEO\\Desktop\\books\\{bookTitle}\\";
+    Directory.CreateDirectory(path);
+    using var fs = new FileStream(Path.Combine(path, $"{part.Title}.mp3"), FileMode.OpenOrCreate);
     await s.CopyToAsync(fs);
 }
